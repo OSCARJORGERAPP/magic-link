@@ -386,6 +386,42 @@ app/
 **Causa:** Falta de trigger de refresh
 **Solución:** Implementar refreshTrigger state que se incrementa después de envío de email
 
+### Error 7: Mailhog SMTP Authentication Failed
+**Síntoma:** Error "Missing credentials for PLAIN" al intentar enviar email
+```
+[EMAIL] Failed to send email: Error: Missing credentials for "PLAIN"
+    code: 'EAUTH',
+    command: 'API'
+```
+
+**Causa:** 
+- Nodemailer estaba enviando credenciales vacías (`user: '', pass: ''`)
+- Mailhog estaba pidiendo autenticación PLAIN
+- La configuración no tenía `ignoreTLS` para desarrollo
+
+**Solución:**
+En `lib/email.ts`, actualizar la configuración de nodemailer:
+```typescript
+const transporter = nodemailer.createTransport({
+  host: MAILHOG_HOST,
+  port: MAILHOG_PORT,
+  secure: false,
+  ignoreTLS: true,           // ← Agregar esto
+  tls: {
+    rejectUnauthorized: false,
+  },
+  // ← QUITAR auth completamente (no enviar credenciales vacías)
+});
+```
+
+**Resultado:** ✓ Email se envía correctamente a Mailhog
+
+**Notas Importantes:**
+- Mailhog no requiere autenticación (es solo para desarrollo)
+- No enviar `auth` vacío: Nodemailer interpretará que hay credenciales
+- Usar `ignoreTLS: true` para Mailhog (no soporta TLS)
+- En producción, usar SMTP real (SendGrid, AWS SES) con credenciales válidas
+
 ---
 
 ## 5. TECNOLOGÍAS, HERRAMIENTAS Y LIBRERÍAS
