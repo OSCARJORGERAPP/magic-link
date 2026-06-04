@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed": "ts-node scripts/seedDatabase.ts"
+    "seed": "node scripts/seedDatabase.js"
   },
   "dependencies": {
     "dotenv": "^17.4.2",

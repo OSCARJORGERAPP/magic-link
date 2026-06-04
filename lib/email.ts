@@ -5,13 +5,15 @@ const MAILHOG_PORT = parseInt(process.env.MAILHOG_SMTP_PORT || '1025');
 
 export async function sendMagicLinkEmail(email: string, token: string): Promise<boolean> {
   try {
+    console.log(`[EMAIL] Connecting to SMTP: ${MAILHOG_HOST}:${MAILHOG_PORT}`);
+
     const transporter = nodemailer.createTransport({
       host: MAILHOG_HOST,
       port: MAILHOG_PORT,
       secure: false,
-      auth: {
-        user: '',
-        pass: '',
+      ignoreTLS: true,
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -32,11 +34,12 @@ export async function sendMagicLinkEmail(email: string, token: string): Promise<
       `,
     };
 
+    console.log(`[EMAIL] Sending email to: ${email}`);
     const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info);
+    console.log('[EMAIL] Email sent successfully:', info.response);
     return true;
   } catch (error) {
-    console.error('Failed to send email:', error);
+    console.error('[EMAIL] Failed to send email:', error);
     return false;
   }
 }
