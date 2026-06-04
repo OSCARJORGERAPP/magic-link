@@ -1,65 +1,97 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import AuthForm from '@/components/AuthForm';
+import ResponseWindow from '@/components/ResponseWindow';
+import DatabaseMonitor from '@/components/DatabaseMonitor';
+import WelcomeModal from '@/components/WelcomeModal';
+import './page.css';
+
+interface AuthResponse {
+  email: string;
+  token: string;
+  message: string;
+}
 
 export default function Home() {
+  const [authResponse, setAuthResponse] = useState<AuthResponse | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [welcomeEmail, setWelcomeEmail] = useState('');
+  const [dbRefreshTrigger, setDbRefreshTrigger] = useState(0);
+  const authFormRef = useRef<{ resetForm: () => void }>(null);
+
+  const handleAuthSubmit = async (email: string) => {
+    try {
+      const response = await fetch('/api/auth/send-magic-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setAuthResponse({
+          email: data.email,
+          token: data.token,
+          message: data.message,
+        });
+
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('authEmail', data.email);
+
+        authFormRef.current?.resetForm();
+
+        setDbRefreshTrigger(prev => prev + 1);
+
+        if (!data.isNewUser) {
+          setWelcomeEmail(data.email);
+          setShowWelcomeModal(true);
+        }
+      } else {
+        alert('Error: ' + (data.error || 'Something went wrong'));
+      }
+    } catch (error) {
+      console.error('Error sending magic link:', error);
+      alert('Error sending magic link. Please try again.');
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="magic-link-container">
+      <div className="header">
+        <h1>MAGIC-LINK</h1>
+        <p>Secure Authentication with Magic Links</p>
+      </div>
+
+      <div className="content-grid">
+        <div className="auth-section">
+          <div className="section-title">AUTHENTICATION</div>
+          <p className="section-subtitle">enter your email to receive a magic link</p>
+          <AuthForm ref={authFormRef} onSubmit={handleAuthSubmit} />
+        </div>
+
+        <div className="response-section">
+          <div className="section-title">RESPONSE</div>
+          <p className="section-subtitle">email and authentication token</p>
+          <ResponseWindow authResponse={authResponse} />
+        </div>
+
+        <div className="database-section">
+          <div className="section-title">DATABASE MONITOR</div>
+          <p className="section-subtitle">real-time changes in MAGIC-LINK-DB</p>
+          <DatabaseMonitor refreshTrigger={dbRefreshTrigger} />
+        </div>
+      </div>
+
+      {showWelcomeModal && (
+        <WelcomeModal
+          email={welcomeEmail}
+          onClose={() => setShowWelcomeModal(false)}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      )}
+    </main>
   );
 }
