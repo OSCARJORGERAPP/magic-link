@@ -287,6 +287,49 @@ Asunto: Your Magic Link - Authentication
 
 ## 4. ERRORES DURANTE EL DESARROLLO Y SUS SOLUCIONES
 
+### Error 0: Conflicto de Versiones - Next.js 9.3.3 con React 19.2.4
+**Síntoma:** Error `ERESOLVE could not resolve` durante `npm install`
+```
+npm error code ERESOLVE
+npm error ERESOLVE could not resolve
+npm error While resolving: next@9.3.3
+npm error Found: react@19.2.4
+npm error Could not resolve dependency:
+npm error peer react@"^16.6.0" from next@9.3.3
+```
+
+**Causa:** 
+- El proyecto fue inicializado con `create-next-app` que usó una versión antigua de Next.js (9.3.3)
+- Next.js 9.3.3 requiere React ^16.6.0, pero necesitábamos React 19.2.4 para características modernas
+- Las versiones son completamente incompatibles
+
+**Solución:**
+```bash
+# 1. Actualizar package.json: cambiar next de "^9.3.3" a "16.2.7"
+# En package.json, dependencias:
+"next": "16.2.7",
+
+# 2. Limpiar node_modules e instalar nuevamente
+rm -r node_modules
+rm package-lock.json
+npm install
+
+# O con PowerShell en Windows:
+Remove-Item -Recurse -Force node_modules
+Remove-Item package-lock.json
+npm install
+```
+
+**Resultado:** ✓ Ahora Next.js 16.2.7 es compatible con React 19.2.4
+
+**Notas Importantes:**
+- Next.js 16.2.7 es compatible con React 19.2.4 (ambos son versiones modernas)
+- Si tienes este error, SIEMPRE actualiza Next.js primero
+- Versión recomendada: Next.js 16.2.7 (como en este proyecto)
+- No usar versiones antiguas de Next.js (< 13) con React 19
+
+---
+
 ### Error 1: MongoDB Connection Failed
 **Síntoma:** Error "connect ECONNREFUSED 127.0.0.1:27017"
 **Causa:** MongoDB no está corriendo
