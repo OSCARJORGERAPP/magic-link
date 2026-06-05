@@ -6,10 +6,11 @@ import './AuthForm.css';
 
 interface AuthFormProps {
   onSubmit: (email: string) => void;
+  onInputClick?: () => void;
 }
 
 const AuthForm = forwardRef<{ resetForm: () => void }, AuthFormProps>(
-  ({ onSubmit }, ref) => {
+  ({ onSubmit, onInputClick }, ref) => {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +49,12 @@ const AuthForm = forwardRef<{ resetForm: () => void }, AuthFormProps>(
       if (error) setError('');
     };
 
+    const handleInputClick = () => {
+      setEmail('');
+      setError('');
+      onInputClick?.();
+    };
+
     return (
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="form-group">
@@ -55,10 +62,12 @@ const AuthForm = forwardRef<{ resetForm: () => void }, AuthFormProps>(
             type="email"
             value={email}
             onChange={handleEmailChange}
+            onClick={handleInputClick}
             placeholder="Enter your email address"
             className={`email-input ${error ? 'input-error' : ''}`}
             disabled={isLoading}
             autoComplete="email"
+            suppressHydrationWarning
           />
           {error && <span className="error-message">{error}</span>}
         </div>
@@ -67,6 +76,7 @@ const AuthForm = forwardRef<{ resetForm: () => void }, AuthFormProps>(
           type="submit"
           className="submit-button"
           disabled={isLoading}
+          suppressHydrationWarning
         >
           {isLoading ? 'Sending...' : 'SEND MAGIC LINK'}
         </button>

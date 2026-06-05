@@ -70,7 +70,11 @@ export default function Home() {
         <div className="auth-section">
           <div className="section-title">AUTHENTICATION</div>
           <p className="section-subtitle">enter your email to receive a magic link</p>
-          <AuthForm ref={authFormRef} onSubmit={handleAuthSubmit} />
+          <AuthForm
+            ref={authFormRef}
+            onSubmit={handleAuthSubmit}
+            onInputClick={() => setAuthResponse(null)}
+          />
         </div>
 
         <div className="response-section">

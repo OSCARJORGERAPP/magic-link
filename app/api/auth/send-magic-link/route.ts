@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
           $set: { lastAccessAt: new Date() },
         }
       );
+      user.accessCount += 1;
     }
 
     // Generate token
