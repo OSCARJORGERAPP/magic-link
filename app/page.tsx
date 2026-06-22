@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import AuthForm from '@/components/AuthForm';
 import ResponseWindow from '@/components/ResponseWindow';
 import DatabaseMonitor from '@/components/DatabaseMonitor';
