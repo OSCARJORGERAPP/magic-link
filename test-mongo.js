@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+import { MongoClient } from 'mongodb';
 
 const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const mongoDb = process.env.MONGODB_DB || 'MAGIC-LINK-DB';
